@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refer & Earn</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 16px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .stat-card {
+            padding: 16px;
+            text-align: center;
+            border-radius: 8px;
+        }
+        
+        .stat-card.referrals {
+            background-color: #e3f2fd;
+        }
+        
+        .stat-card.earnings {
+            background-color: #e8f5e9;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .referral-link {
+            margin-top: 20px;
+        }
+        
+        .referral-link h3 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .link-container {
+            display: flex;
+            position: relative;
+            margin-bottom: 16px;
+        }
+        
+        #referral-code {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .share-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .how-it-works {
+            margin-top: 8px;
+        }
+        
+        .how-it-works h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            width: 24px;
+            height: 24px;
+            background-color: #2196f3;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+        
+        .step-content p {
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .history {
+            margin-top: 20px;
+        }
+        
+        .history h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .referral-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .referral-user {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            color: #616161;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .user-date {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .referral-reward {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4caf50;
+        }
+        
+        .no-referrals {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #323232;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>Refer & Earn</h1>
+            <p>Invite friends and earn rewards!</p>
+        </div>
+        
+        <div class="card stats">
+            <div class="stat-card referrals">
+                <div class="stat-value" id="referrals-count">0</div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+            <div class="stat-card earnings">
+                <div class="stat-value" id="earnings">$0</div>
+                <div class="stat-label">Total Earnings</div>
+            </div>
+        </div>
+        
+        <div class="card referral-link">
+            <h3>Your Referral Link</h3>
+            <div class="link-container">
+                <input type="text" id="referral-code" readonly>
+                <button class="copy-btn" id="copy-btn">Copy</button>
+            </div>
+            <button class="share-btn" id="share-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                </svg>
+                Share with Friends
+            </button>
+        </div>
+        
+        <div class="card how-it-works">
+            <h3>How It Works</h3>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Share Your Link</h4>
+                    <p>Copy your personal referral link and share it with friends</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Friends Join</h4>
+                    <p>Your friends join using your referral link</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Earn Rewards</h4>
+                    <p>You earn $1 for each friend who joins and completes verification</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card history">
+            <h3>Referral History</h3>
+            <div id="referral-list">
+                <!-- Referral history will be populated here -->
+                <div class="no-referrals">No referrals yet. Share your link to start earning!</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">Link copied to clipboard!</div>
+    
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+    
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        
+        // Show Telegram's back button
+        tg.BackButton.show();
+        tg.BackButton.onClick(() => {
+            tg.close();
+        });
+        
+        // Expand the Web App to full height
+        tg.expand();
+
+        // Set theme based on Telegram theme
+        document.body.style.backgroundColor = tg.colorScheme === 'dark' ? '#1f1f1f' : '#f5f5f5';
+        document.body.style.color = tg.colorScheme === 'dark' ? '#fff' : '#333';
+        
+        // Adjust card styles for dark theme
+        if (tg.colorScheme === 'dark') {
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.backgroundColor = '#2d2d2d';
+            });
+            document.getElementById('referral-code').style.backgroundColor = '#3d3d3d';
+            document.getElementById('referral-code').style.color = '#fff';
+            document.getElementById('referral-code').style.borderColor = '#555';
+        }
+        
+        // Get DOM elements
+        const loadingElement = document.getElementById('loading');
+        const referralsCountElement = document.getElementById('referrals-count');
+        const earningsElement = document.getElementById('earnings');
+        const referralCodeElement = document.getElementById('referral-code');
+        const copyButton = document.getElementById('copy-btn');
+        const shareButton = document.getElementById('share-btn');
+        const referralListElement = document.getElementById('referral-list');
+        const toastElement = document.getElementById('toast');
+        
+        // Mock user data - in a real app, this would come from your backend
+        let userData = {
+            userId: tg.initDataUnsafe?.user?.id || 'demo_user_123',
+            userName: tg.initDataUnsafe?.user?.username || 'demo_user',
+            referralCode: '',
+            referrals: [],
+            totalEarnings: 0
+        };
+        
+        // Generate a referral code using the user's ID
+        function generateReferralCode(userId) {
+            // In a real app, you'd want to generate this server-side
+            return `ref_${userId}_${Math.floor(Math.random() * 10000)}`;
+        }
+        
+        // Show toast message
+        function showToast(message) {
+            toastElement.textContent = message;
+            toastElement.classList.add('show');
+            setTimeout(() => {
+                toastElement.classList.remove('show');
+            }, 2000);
+        }
+        
+        // Copy referral link to clipboard
+        function copyReferralLink() {
+            referralCodeElement.select();
+            document.execCommand('copy');
+            showToast('Referral link copied to clipboard!');
+        }
+        
+        // Share referral link using Telegram's native sharing
+        function shareReferralLink() {
+            if (tg.canInvokeCustomShareWidget) {
+                tg.invokeCustomShareWidget({
+                    text: `Join me on this amazing platform and we both earn rewards! Use my referral link: ${userData.referralCode}`
+                });
+            } else {
+                // Fallback for platforms where custom share isn't supported
+                copyReferralLink();
+                showToast('Link copied! You can now paste and share it');
+            }
+        }
+        
+        // Fetch user data from server
+        function fetchUserData() {
+            // In a real app, you'd make an API call to your backend
+            // For this demo, we'll simulate a delay and use mock data
+            
+            loadingElement.style.display = 'flex';
+            
+            setTimeout(() => {
+                // Mock API response
+                userData = {
+                    userId: tg.initDataUnsafe?.user?.id || 'demo_user_123',
+                    userName: tg.initDataUnsafe?.user?.username || 'demo_user',
+                    referralCode: generateReferralCode(tg.initDataUnsafe?.user?.id || 'demo_user_123'),
+                    totalEarnings: Math.floor(Math.random() * 50),
+                    referrals: generateMockReferrals()
+                };
+                
+                updateUI();
+                loadingElement.style.display = 'none';
+            }, 1500);
+        }
+        
+        // Generate mock referral data
+        function generateMockReferrals() {
+            const count = Math.floor(Math.random() * 10); // 0-9 referrals
+            const referrals = [];
+            
+            const names = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Quinn', 'Avery', 'Cameron', 'Peyton'];
+            
+            for (let i = 0; i < count; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 60)); // Random date within past 60 days
+                
+                referrals.push({
+                    id: `user_${i}`,
+                    name: names[Math.floor(Math.random() * names.length)],
+                    date: date,
+                    reward: Math.random() > 0.7 ? 2 : 1 // 30% chance of $2 reward, otherwise $1
+                });
+            }
+            
+            // Sort by most recent first
+            return referrals.sort((a, b) => b.date - a.date);
+        }
+        
+        // Update UI with user data
+        function updateUI() {
+            referralsCountElement.textContent = userData.referrals.length;
+            earningsElement.textContent = `$${userData.totalEarnings}`;
+            
+            // Set referral link/code
+            const baseUrl = 'https://t.me/YourBotUsername?start=';
+            referralCodeElement.value = baseUrl + userData.referralCode;
+            
+            // Update referral history
+            if (userData.referrals.length > 0) {
+                referralListElement.innerHTML = '';
+                
+                userData.referrals.forEach(referral => {
+                    const formattedDate = referral.date.toLocaleDateString('en-US', {
+                        month: 'short', 
+                        day: 'numeric'
+                    });
+                    
+                    const referralItem = document.createElement('div');
+                    referralItem.className = 'referral-item';
+                    
+                    referralItem.innerHTML = `
+                        <div class="referral-user">
+                            <div class="user-avatar">${referral.name.charAt(0)}</div>
+                            <div>
+                                <div class="user-name">${referral.name}</div>
+                                <div class="user-date">${formattedDate}</div>
+                            </div>
+                        </div>
+                        <div class="referral-reward">+$${referral.reward}</div>
+                    `;
+                    
+                    referralListElement.appendChild(referralItem);
+                });
+            } else {
+                referralListElement.innerHTML = '<div class="no-referrals">No referrals yet. Share your link to start earning!</div>';
+            }
+        }
+        
+        // Add event listeners
+        copyButton.addEventListener('click', copyReferralLink);
+        shareButton.addEventListener('click', shareReferralLink);
+        referralCodeElement.addEventListener('click', copyReferralLink);
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUserData();
+        });
+        
+        // Let Telegram know the page is ready
+        tg.ready();
+    </script>
+</body>
+</html>
